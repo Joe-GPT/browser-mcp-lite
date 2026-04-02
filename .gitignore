@@ -5,3 +5,7 @@ node_modules/
 
 # Secrets (never commit)
 .browser-mcp-secrets.json
+.mcp.json
+
+# Spectra
+openspec/

@@ -42,47 +42,66 @@ Four tools, exposed via standard MCP protocol:
 
 ## Quick start
 
-### 1. Clone and install
+### 1. Install and start the server
+
+**Option A — npx (no clone needed):**
+
+```bash
+npx browser-mcp-lite
+```
+
+**Option B — clone:**
 
 ```bash
 git clone https://github.com/notoriouslab/browser-mcp-lite.git
 cd browser-mcp-lite/server
 npm install
+node index.js
 ```
 
-### 2. Generate auth token
+On first run, a token is auto-generated. The server prints the full token and a ready-to-paste config block:
 
-```bash
-node setup.js
+```
+[browser-mcp-lite] MCP server: http://127.0.0.1:12307/mcp
+[browser-mcp-lite] WebSocket:  ws://127.0.0.1:12307/ws
+
+⚠ First run — new token generated
+
+━━━ Auth Token (paste into Chrome Extension popup) ━━━
+<full 64-char hex token>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━ MCP Client Config (save as .mcp.json) ━━━
+{
+  "mcpServers": {
+    "browser": {
+      "type": "http",
+      "url": "http://127.0.0.1:12307/mcp",
+      "headers": {
+        "Authorization": "Bearer <token>"
+      }
+    }
+  }
+}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[browser-mcp-lite] Waiting for Chrome Extension...
 ```
 
-This creates `~/.browser-mcp-secrets.json` with a random 64-char hex token. File permissions are set to `600` (owner-only).
-
-### 3. Load the Chrome Extension
+### 2. Load the Chrome Extension
 
 1. Open `chrome://extensions/`
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked** → select the `extension/` folder
 4. Click the Browser MCP Lite icon in your toolbar
-5. Paste the token from `~/.browser-mcp-secrets.json` into the **Auth Token** field
+5. Copy the token printed in the terminal and paste it into the **Auth Token** field
 6. Click **Connect**
-
-### 4. Start the server
-
-```bash
-node index.js
-```
-
-```
-[browser-mcp-lite] MCP server: http://127.0.0.1:12307/mcp
-[browser-mcp-lite] WebSocket:  ws://127.0.0.1:12307/ws
-[browser-mcp-lite] Token: a1b2c3d4...
-[browser-mcp-lite] Waiting for Chrome Extension...
-```
 
 The extension auto-connects. Click the toolbar icon to verify the green dot.
 
-### 5. Connect your AI assistant
+### 3. Connect your AI assistant
+
+> **Note:** The ready-to-paste `.mcp.json` config is printed in the terminal when the server starts.
 
 <details>
 <summary><strong>Claude Code</strong></summary>
@@ -103,7 +122,7 @@ Add to your project's `.mcp.json`:
 }
 ```
 
-Replace `YOUR_TOKEN_HERE` with the token from `~/.browser-mcp-secrets.json`.
+Replace `YOUR_TOKEN_HERE` with the token printed in the terminal.
 
 </details>
 
@@ -255,6 +274,7 @@ browser-mcp-lite/
 ├── server/
 │   ├── index.js          # Fastify MCP Server + WebSocket hub
 │   ├── tools.js          # Tool schemas + handlers (4 tools)
+│   ├── token.js          # Shared token generation/loading
 │   ├── setup.js          # One-time token generator
 │   └── package.json
 ├── extension/

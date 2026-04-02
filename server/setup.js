@@ -1,29 +1,30 @@
-import { randomBytes } from 'crypto';
-import { readFileSync, writeFileSync, chmodSync } from 'fs';
-import { homedir } from 'os';
-import { join } from 'path';
+import { ensureToken } from './token.js';
 
-const secretsPath = join(homedir(), '.browser-mcp-secrets.json');
+const PORT = process.env.MCP_PORT || 12307;
+const HOST = '127.0.0.1';
+const mcpUrl = `http://${HOST}:${PORT}/mcp`;
+const sep = '\u2501'.repeat(53);
 
-let secrets = {};
-try {
-  secrets = JSON.parse(readFileSync(secretsPath, 'utf8'));
-} catch {
-  // File doesn't exist or invalid JSON — start fresh
+const { token, isNew } = ensureToken();
+
+if (isNew) {
+  console.log('\u26A0 New token generated');
+} else {
+  console.log('Token already exists');
 }
 
-if (secrets.token) {
-  console.log('Token already exists in', secretsPath);
-  console.log('Token (first 8 chars):', secrets.token.slice(0, 8) + '...');
-  process.exit(0);
-}
+console.log(`\n\u2501\u2501\u2501 Auth Token (paste into Chrome Extension popup) \u2501\u2501\u2501`);
+console.log(token);
+console.log(sep);
 
-const token = randomBytes(32).toString('hex');
-secrets.token = token;
-
-writeFileSync(secretsPath, JSON.stringify(secrets, null, 2) + '\n', 'utf8');
-chmodSync(secretsPath, 0o600);
-
-console.log('Generated token and saved to', secretsPath);
-console.log('Token (first 8 chars):', token.slice(0, 8) + '...');
-console.log('File permissions set to 600 (owner read/write only)');
+console.log(`\n\u2501\u2501\u2501 MCP Client Config (save as .mcp.json) \u2501\u2501\u2501`);
+console.log(JSON.stringify({
+  mcpServers: {
+    browser: {
+      type: 'http',
+      url: mcpUrl,
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  },
+}, null, 2));
+console.log(sep);

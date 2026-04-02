@@ -1,31 +1,18 @@
+#!/usr/bin/env node
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { readFileSync } from 'fs';
-import { homedir } from 'os';
-import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { registerTools } from './tools.js';
+import { ensureToken } from './token.js';
 
 // --- Config ---
 const PORT = process.env.MCP_PORT || 12307;
 const HOST = '127.0.0.1';
 
-// --- Load token ---
-const secretsPath = join(homedir(), '.browser-mcp-secrets.json');
-let TOKEN;
-try {
-  const secrets = JSON.parse(readFileSync(secretsPath, 'utf8'));
-  TOKEN = secrets.token;
-} catch (err) {
-  console.error('Cannot read', secretsPath, '— run: node setup.js');
-  process.exit(1);
-}
-if (!TOKEN || TOKEN.length < 32) {
-  console.error('Token missing or too short (need >= 32 chars). Run: node setup.js');
-  process.exit(1);
-}
+// --- Ensure token (auto-setup on first run) ---
+const { token: TOKEN, isNew } = ensureToken();
 
 // --- Extension connection state ---
 let extensionWs = null;
@@ -179,7 +166,29 @@ app.register(async function (fastify) {
 
 // --- Start ---
 await app.listen({ port: PORT, host: HOST });
-console.log(`[browser-mcp-lite] MCP server: http://${HOST}:${PORT}/mcp`);
-console.log(`[browser-mcp-lite] WebSocket:  ws://${HOST}:${PORT}/ws`);
-console.log(`[browser-mcp-lite] Token: ${TOKEN.slice(0, 8)}...`);
-console.log('[browser-mcp-lite] Waiting for Chrome Extension...');
+
+const mcpUrl = `http://${HOST}:${PORT}/mcp`;
+const wsUrl = `ws://${HOST}:${PORT}/ws`;
+const sep = '\u2501'.repeat(53);
+
+console.log(`[browser-mcp-lite] MCP server: ${mcpUrl}`);
+console.log(`[browser-mcp-lite] WebSocket:  ${wsUrl}`);
+if (isNew) console.log('\n\u26A0 First run \u2014 new token generated');
+
+console.log(`\n\u2501\u2501\u2501 Auth Token (paste into Chrome Extension popup) \u2501\u2501\u2501`);
+console.log(TOKEN);
+console.log(sep);
+
+console.log(`\n\u2501\u2501\u2501 MCP Client Config (save as .mcp.json) \u2501\u2501\u2501`);
+console.log(JSON.stringify({
+  mcpServers: {
+    browser: {
+      type: 'http',
+      url: mcpUrl,
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    },
+  },
+}, null, 2));
+console.log(sep);
+
+console.log('\n[browser-mcp-lite] Waiting for Chrome Extension...');

@@ -1,9 +1,18 @@
 {
   "name": "browser-mcp-lite",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Minimal, auth-secured MCP server for real browser access",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "browser-mcp-lite": "index.js"
+  },
+  "files": [
+    "index.js",
+    "token.js",
+    "setup.js",
+    "tools.js"
+  ],
   "scripts": {
     "start": "node index.js",
     "setup": "node setup.js"

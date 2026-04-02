@@ -40,47 +40,66 @@ browser-mcp-lite 走不同的路：
 
 ## 快速開始
 
-### 1. Clone 並安裝
+### 1. 安裝並啟動伺服器
+
+**方法 A — npx（不需 clone）：**
+
+```bash
+npx browser-mcp-lite
+```
+
+**方法 B — clone：**
 
 ```bash
 git clone https://github.com/notoriouslab/browser-mcp-lite.git
 cd browser-mcp-lite/server
 npm install
+node index.js
 ```
 
-### 2. 產生認證 token
+首次啟動時會自動產生 token。伺服器會印出完整 token 和可直接貼上的設定檔：
 
-```bash
-node setup.js
+```
+[browser-mcp-lite] MCP server: http://127.0.0.1:12307/mcp
+[browser-mcp-lite] WebSocket:  ws://127.0.0.1:12307/ws
+
+⚠ First run — new token generated
+
+━━━ Auth Token (paste into Chrome Extension popup) ━━━
+<完整 64 字元 hex token>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━ MCP Client Config (save as .mcp.json) ━━━
+{
+  "mcpServers": {
+    "browser": {
+      "type": "http",
+      "url": "http://127.0.0.1:12307/mcp",
+      "headers": {
+        "Authorization": "Bearer <token>"
+      }
+    }
+  }
+}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[browser-mcp-lite] Waiting for Chrome Extension...
 ```
 
-會建立 `~/.browser-mcp-secrets.json`，內含隨機 64 字元 hex token。檔案權限設為 `600`（僅擁有者可讀寫）。
-
-### 3. 載入 Chrome Extension
+### 2. 載入 Chrome Extension
 
 1. 開啟 `chrome://extensions/`
 2. 啟用右上角的**開發人員模式**
 3. 點**載入未封裝項目** → 選擇 `extension/` 資料夾
 4. 點工具列的 Browser MCP Lite 圖示
-5. 在 **Auth Token** 欄位貼上 `~/.browser-mcp-secrets.json` 裡的 token
+5. 複製終端機印出的 token，貼到 **Auth Token** 欄位
 6. 點 **Connect**
-
-### 4. 啟動伺服器
-
-```bash
-node index.js
-```
-
-```
-[browser-mcp-lite] MCP server: http://127.0.0.1:12307/mcp
-[browser-mcp-lite] WebSocket:  ws://127.0.0.1:12307/ws
-[browser-mcp-lite] Token: a1b2c3d4...
-[browser-mcp-lite] Waiting for Chrome Extension...
-```
 
 Extension 會自動連線。點工具列圖示確認綠燈亮起。
 
-### 5. 連接你的 AI 助手
+### 3. 連接你的 AI 助手
+
+> **提示：** 伺服器啟動時會在終端機印出可直接貼上的 `.mcp.json` 設定。
 
 <details>
 <summary><strong>Claude Code</strong></summary>
@@ -101,7 +120,7 @@ Extension 會自動連線。點工具列圖示確認綠燈亮起。
 }
 ```
 
-把 `你的TOKEN` 換成 `~/.browser-mcp-secrets.json` 裡的 token。
+把 `你的TOKEN` 換成終端機印出的 token。
 
 </details>
 
@@ -245,6 +264,7 @@ browser-mcp-lite/
 ├── server/
 │   ├── index.js          # Fastify MCP Server + WebSocket hub
 │   ├── tools.js          # 工具定義 + handler（4 個工具）
+│   ├── token.js          # 共用 token 產生/載入
 │   ├── setup.js          # 一次性 token 產生器
 │   └── package.json
 ├── extension/
